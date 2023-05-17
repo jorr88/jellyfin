@@ -10,8 +10,8 @@ services:
 #      - PGID=1000
       - TZ=Europe/Madrid
       - ROC_ENABLE_PRE_VEGA=1
-       #- JELLYFIN_PublishedServerUrl=192.168.0.5 #optional
-    network_mode: 'host'    
+      - JELLYFIN_PublishedServerUrl=192.168.0.200 #optional
+       #network_mode: 'host'    
     volumes:
       - ${config}/jellyfin:/config
       - ${config}/jellyfin/cache:/cache
@@ -26,7 +26,7 @@ services:
     restart: unless-stopped
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
-      - /dev/dri/kfd:/dev/dri/kfd
+        # - /dev/dri/kfd:/dev/dri/kfd
     group_add:
       - "106"
       - "44"
