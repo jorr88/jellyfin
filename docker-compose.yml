@@ -3,21 +3,18 @@ version: '3'
 services:
   jellyfin:
     image: jellyfin/jellyfin
-#    container_name: jellyfin
+    container_name: jellyfin
     user: 1000:1000
     environment:
-#      - PUID=1000
-#      - PGID=1000
       - TZ=Europe/Madrid
       - ROC_ENABLE_PRE_VEGA=1
-      - JELLYFIN_PublishedServerUrl=192.168.0.200 #optional
-       #network_mode: 'host'    
+      - JELLYFIN_PublishedServerUrl=192.168.1.200 #optional
     volumes:
       - ${config}/jellyfin:/config
       - ${config}/jellyfin/cache:/cache
-      - ${HDD}/Series:/data/Series
-      - ${HDD}/Peliculas:/data/Peliculas
-      - ${HDD}/Musica:/data/Musica
+      - ${HDD}/Media/Series:/data/Series
+      - ${HDD}/Media/Peliculas:/data/Peliculas
+      - ${HDD}/Media/Musica:/data/Musica
     ports:
       - 8096:8096
         # - 8920:8920 #optional
@@ -26,14 +23,112 @@ services:
     restart: unless-stopped
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
-        # - /dev/dri/kfd:/dev/dri/kfd
     group_add:
       - "106"
       - "44"
-      #networks:
-      #jmz_net:
 
-      #networks:
-      #jmz_net:
-      #name: jmz_networks
-      #driver: bridge
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: jackett
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Madrid
+      - AUTO_UPDATE=true #optional
+      - RUN_OPTS= #optional
+    volumes:
+      - ${config}/jackett/data:/config
+      - ${HDD}/Media/download/complete:/downloads
+    ports:
+      - 9117:9117
+    restart: unless-stopped
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Madrid
+    volumes:
+      - ${config}/sonarr/data:/config
+      - ${HDD}/Media/Series:/tv #optional
+      - ${HDD}/Media/download/complete:/downloads #optional
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Madrid
+    volumes:
+      - ${config}/radarr/data:/config
+      - ${HDD}/Media/Peliculas:/movies #optional
+      - ${HDD}/Media/download/complete:/downloads #optional
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Madrid
+    volumes:
+      - ${config}/lidarr/data:/config
+      - ${HDD}/Media/Musica:/music #optional
+      - ${HDD}/Media/download/complete:/downloads #optional
+    ports:
+      - 8686:8686
+    restart: unless-stopped
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Madrid
+    volumes:
+      - ${config}/prowlarr/data:/config
+    ports:
+      - 9696:9696
+    restart: unless-stopped
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Madrid
+      - WEBUI_PORT=8181
+    volumes:
+      - ${config}/qbittorent/config:/config
+      - ${HDD}/Media/download/complete:/downloads
+      - ${HDD}/Media/download/incomplete:/incomplete
+    ports:
+      - 8181:8181
+      - 6881:6881
+      - 6881:6881/udp
+    restart: unless-stopped
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Madrid
+    volumes:
+      - ${config}/bazarr/config:/config
+      - ${HDD}/Media/Peliculas:/movies
+      - ${HDD}/Media/Series:/tv
+    ports:
+      - 6767:6767
+    restart: unless-stopped
